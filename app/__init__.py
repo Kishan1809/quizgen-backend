@@ -3,7 +3,7 @@ QuizGen Platform – Flask Application Factory
 """
 
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from .config import Config
@@ -18,11 +18,30 @@ def create_app(config_class=Config) -> Flask:
     for w in warnings:
         print(f"[CONFIG] ⚠️  {w}")
 
-    # ── CORS: allow ALL origins (fixes Vercel preview URLs) ──
+    # ── CORS ─────────────────────────────────────────────────
+    # supports_credentials=True requires explicit origins (not *)
     CORS(app,
-         origins="*",
+         resources={r"/*": {"origins": "*"}},
+         supports_credentials=False,
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
          allow_headers=["Content-Type", "Authorization"])
+
+    # Handle OPTIONS preflight manually to ensure headers always sent
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            res = app.make_default_options_response()
+            res.headers["Access-Control-Allow-Origin"]  = "*"
+            res.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            res.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+            return res
+
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers["Access-Control-Allow-Origin"]  = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
 
     # ── Database ─────────────────────────────────────────────
     configure_database(app)
