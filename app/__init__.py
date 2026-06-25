@@ -22,14 +22,14 @@ def create_app(config_class=Config) -> Flask:
     # ── CORS — allow all Vercel preview + production URLs ────
     frontend_url = config_class.FRONTEND_URL  # your main domain
 
-    def cors_origin_allowed(origin):
-        if not origin:
-            return False
-        allowed = [
-            "http://localhost:3000",
-            "http://localhost:5173",
-            frontend_url,
-        ]
+    CORS(
+    app,
+    supports_credentials=True,
+    origins=[
+        "http://localhost:3000",
+        "https://quizgen-82q5ssa2n-kishan1809s-projects.vercel.app"
+    ]
+)
         if origin in allowed:
             return True
         # Allow ANY vercel.app subdomain for your project
