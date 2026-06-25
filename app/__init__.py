@@ -3,7 +3,6 @@ QuizGen Platform – Flask Application Factory
 """
 
 import os
-import re
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -19,41 +18,11 @@ def create_app(config_class=Config) -> Flask:
     for w in warnings:
         print(f"[CONFIG] ⚠️  {w}")
 
-    # ── CORS — allow all Vercel preview + production URLs ────
-    frontend_url = config_class.FRONTEND_URL  # your main domain
-
-#     CORS(
-#     app,
-#     supports_credentials=True,
-#     origins=[
-#         "http://localhost:3000",
-#         "https://quizgen-82q5ssa2n-kishan1809s-projects.vercel.app"
-#     ]
-        
-# )
-
-
-    def cors_origin_allowed(origin): 
-        if not origin: 
-            return False
-        allowed = [ "http://localhost:3000", "https://quizgen-82q5ssa2n-kishan1809s-projects.vercel.app", frontend_url, ]
-
-        
-        if origin in allowed:
-            return True
-        # Allow ANY vercel.app subdomain for your project
-        if re.match(r"https://.*\.vercel\.app$", origin):
-            return True
-        return False
-
-    CORS(app, resources={
-        r"/*": {
-            "origins": cors_origin_allowed,
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True,
-        }
-    })
+    # ── CORS: allow ALL origins (fixes Vercel preview URLs) ──
+    CORS(app,
+         origins="*",
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization"])
 
     # ── Database ─────────────────────────────────────────────
     configure_database(app)
@@ -75,7 +44,7 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(practice_bp,  url_prefix="/practice")
     app.register_blueprint(tutor_bp,     url_prefix="/tutor")
 
-    # ── Health Check ──────────────────────────────────────────
+    # ── Health Check ─────────────────────────────────────────
     @app.route("/health")
     def health():
         api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
@@ -97,6 +66,7 @@ def create_app(config_class=Config) -> Flask:
             "docs":    "/health",
         }), 200
 
+    # ── Error Handlers ────────────────────────────────────────
     @app.errorhandler(404)
     def not_found(e):
         return jsonify({"message": "Route not found"}), 404
