@@ -7,3 +7,4 @@ requests
 Werkzeug
 pymongo[srv]
 dnspython
+gunicorn
