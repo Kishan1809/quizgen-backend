@@ -1,10 +1,31 @@
+# Core Flask
 Flask==3.1.3
+Werkzeug
 flask-cors
 flask-pymongo
 flask-jwt-extended
-python-dotenv
-requests
-Werkzeug
+
+# Database
 pymongo[srv]
 dnspython
+
+# Auth
+PyJWT
+
+# Environment
+python-dotenv
+
+# HTTP requests (OpenRouter API calls)
+requests
+
+# PDF generation
+reportlab
+
+# Image processing
+Pillow
+
+# OCR (wrapper only - tesseract binary pre-installed on Render)
+pytesseract
+
+# Production server
 gunicorn
